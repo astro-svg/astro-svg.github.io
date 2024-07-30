@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BC LIONS 5050</title>
+
+    <style>
+      .container {
+        position: relative;
+        display: inline-block;
+      }
+
+      .container img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .overlay {
+        position: absolute;
+        color: black;
+        font-size: 18px;
+        /* background-color: rgba(0, 0, 0, 0.5); */
+        padding: 10px;
+      }
+
+      #winningTicketOverlay {
+        bottom: 16rem;
+        left: 15rem;
+        font-size: 50px;
+      }
+
+      #jackpotOverlay {
+        bottom: 16rem;
+        right: 15rem;
+        font-size: 50px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <img src="BC Lions_5050_JackpotCounter_Screen.png" alt="Image" />
+      <!-- winning ticket -->
+      <div id="winningTicketOverlay" class="overlay">BB-2708269</div>
+      <!-- jackpot -->
+      <div id="jackpotOverlay" class="overlay">Jackpot: Loading...</div>
+    </div>
+
+    <script>
+      function updateOverlayText() {
+        fetch(
+          "https://comm.5050central.com/api/currentdraw/?key=d9d88837ea57e2914f723e02f0db583a31759a14b92ed3d44b540247&halfpot=1"
+        )
+          .then((response) => response.text())
+          .then((xmlText) => {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+            // Check if jackpot value is available
+            let jackpot =
+              xmlDoc.getElementsByTagName("jackpot")[0]?.textContent;
+
+            //if it's not available
+            if (!jackpot) {
+              jackpot = "N/A"; // what it will display
+            }
+
+            // Check if jackpot value is available
+            let total =
+              xmlDoc.getElementsByTagName("total")[0]?.textContent;
+
+            //if it's not available
+            if (!total) {
+              total = "N/A"; // what it will display
+            }
+
+            // Check if winning ticket value is available
+            let winning_ticket =
+              xmlDoc.getElementsByTagName("winningticket")[0]?.textContent;
+
+            //if it's not available
+            if (!winning_ticket) {
+              winning_ticket = "N/A"; // what it will display
+            }
+
+            // Update Winning Ticket and Jackpot
+            document.getElementById(
+              "winningTicketOverlay"
+            ).textContent = `${winning_ticket}`;
+            document.getElementById(
+              "jackpotOverlay"
+            ).textContent = `${total}`;
+          })
+          .catch((error) => {
+            console.error("Error fetching XML:", error);
+            document.getElementById("winningTicketOverlay").textContent =
+              "Error fetching data";
+            document.getElementById("jackpotOverlay").textContent =
+              "Error fetching data";
+          });
+      }
+
+      // call to refresh it every 3 seconds
+      updateOverlayText();
+      setInterval(updateOverlayText, 3000);
+    </script>
+  </body>
+</html>
